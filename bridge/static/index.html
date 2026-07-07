@@ -21,15 +21,15 @@
   /* ---- タイトルバー ---- */
   header {
     display: flex; align-items: center; gap: 10px; flex: none;
-    height: 42px; padding: 0 16px;
+    height: 50px; padding: 0 22px;
     background: linear-gradient(#2c2d2f, #242527);
     border-bottom: 1px solid var(--line);
   }
-  header h1 { font-size: 14px; font-weight: 300; letter-spacing: .04em; color: #cfd0d2; }
+  header h1 { font-size: 17px; font-weight: 300; letter-spacing: .04em; color: #cfd0d2; }
   header h1 b { font-weight: 700; }
-  .badges { margin-left: auto; display: flex; gap: 6px; }
+  .badges { margin-left: auto; display: flex; gap: 8px; }
   .badge {
-    font-size: 10px; padding: 3px 9px; border-radius: 3px;
+    font-size: 12px; padding: 4px 11px; border-radius: 3px;
     background: #1a1b1d; color: var(--faint); border: 1px solid #303134;
   }
   .badge.on { color: #8fd48c; }
@@ -43,63 +43,68 @@
   #camTabs::-webkit-scrollbar { display: none; }
   #camTabs button {
     background: none; border: none; color: #77797c; cursor: pointer;
-    font-size: 12px; padding: 9px 13px 7px; border-bottom: 2px solid transparent;
+    font-size: 14px; padding: 12px 16px 10px; border-bottom: 3px solid transparent;
     white-space: nowrap; font-weight: 500;
   }
   #camTabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
   #camTabs button .dot {
-    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-    margin-right: 5px; background: #333; vertical-align: 1px;
+    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    margin-right: 6px; background: #333; vertical-align: 1px;
   }
   #camTabs button.pgm .dot { background: var(--pgm); box-shadow: 0 0 5px var(--pgm); }
   #camTabs button.pvw .dot { background: var(--pvw); }
 
   /* ---- メイン ---- */
-  main {
-    flex: 1; display: grid; grid-template-columns: minmax(340px, 430px) 1fr;
-    gap: 1px; background: var(--line); overflow: auto; min-height: 0;
+  main { flex: 1; overflow-y: auto; min-height: 0; padding: 34px 0 48px; }
+  #wrap {
+    width: 80%; max-width: 1680px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(430px, 1.05fr) 1fr;
+    gap: 28px; align-items: start;
   }
-  .panel { background: var(--panel); display: flex; flex-direction: column; min-width: 0; }
-  @media (max-width: 860px) {
-    body { overflow: auto; }
-    main { grid-template-columns: 1fr; overflow: visible; }
+  .panel {
+    background: var(--panel); display: flex; flex-direction: column; min-width: 0;
+    border: 1px solid #2c2d2f; border-radius: 8px; overflow: hidden;
+    box-shadow: 0 12px 32px #0008;
+  }
+  @media (max-width: 1100px) {
+    #wrap { width: 94%; grid-template-columns: 1fr; }
   }
 
   /* ---- オンエアバナー ---- */
   #onairBanner {
-    flex: none; display: flex; align-items: center; height: 46px; padding: 0 14px;
+    flex: none; display: flex; align-items: center; height: 54px; padding: 0 20px;
     background: linear-gradient(#3a3b3d, #2e2f31); border-bottom: 1px solid var(--line);
   }
-  #onairBanner .cam { font-size: 17px; font-weight: 700; color: #bbb; }
-  #onairBanner .state { margin-left: 12px; font-size: 15px; font-weight: 600; color: var(--faint); }
+  #onairBanner .cam { font-size: 21px; font-weight: 700; color: #bbb; }
+  #onairBanner .state { margin-left: 14px; font-size: 17px; font-weight: 600; color: var(--faint); }
   #onairBanner.pgm { background: linear-gradient(#e04a35, #c22f1f); }
   #onairBanner.pvw { background: linear-gradient(#4caf49, #35872f); }
   #onairBanner.pgm .cam, #onairBanner.pgm .state,
   #onairBanner.pvw .cam, #onairBanner.pvw .state { color: #fff; }
-  #angles { margin-left: auto; font-size: 11px; color: #ffffffaa; font-variant-numeric: tabular-nums; }
+  #angles { margin-left: auto; font-size: 13px; color: #ffffffaa; font-variant-numeric: tabular-nums; }
 
   /* ---- 数値リードアウト ---- */
   #readout {
     flex: none; display: grid; grid-template-columns: repeat(4, 1fr);
     background: #191a1c; border-bottom: 1px solid var(--line);
   }
-  #readout .cell { padding: 7px 6px 8px; text-align: center; border-right: 1px solid #0006; }
+  #readout .cell { padding: 10px 8px 11px; text-align: center; border-right: 1px solid #0006; }
   #readout .cell:last-child { border-right: none; }
-  #readout .k { font-size: 9px; color: var(--faint); letter-spacing: .06em; }
-  #readout .v { font-size: 13px; color: #e8e9ea; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  #readout .k { font-size: 11px; color: var(--faint); letter-spacing: .06em; }
+  #readout .v { font-size: 16px; color: #e8e9ea; margin-top: 3px; font-variant-numeric: tabular-nums; }
 
   /* ---- ジョイスティック ---- */
-  #stickWrap { flex: 1; display: flex; flex-direction: column; padding: 16px; min-height: 340px; }
-  #padRow { flex: 1; display: flex; gap: 14px; min-height: 280px; }
+  #stickWrap { display: flex; flex-direction: column; padding: 22px; }
+  #padRow { flex: none; display: flex; gap: 18px; height: clamp(380px, 48vh, 540px); }
   .vcol {
-    flex: none; width: 54px; display: flex; flex-direction: column;
-    align-items: center; gap: 5px;
+    flex: none; width: 64px; display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
   }
-  .vcap { font-size: 10px; color: var(--dim); }
-  .vname { font-size: 10px; color: var(--faint); letter-spacing: .08em; margin-top: 3px; }
-  .vval { font-size: 11px; color: #e8e9ea; font-variant-numeric: tabular-nums; }
+  .vcap { font-size: 12px; color: var(--dim); }
+  .vname { font-size: 11px; color: var(--faint); letter-spacing: .08em; margin-top: 3px; }
+  .vval { font-size: 13px; color: #e8e9ea; font-variant-numeric: tabular-nums; }
   .vtrack {
-    position: relative; flex: 1; width: 36px; border-radius: 5px;
+    position: relative; flex: 1; width: 44px; border-radius: 5px;
     background: linear-gradient(#141517, #1c1d1f);
     border: 1px solid #0a0a0a; box-shadow: inset 0 1px 6px #000a;
     touch-action: none; cursor: grab;
@@ -110,7 +115,7 @@
     pointer-events: none;
   }
   .vthumb {
-    position: absolute; left: 3px; right: 3px; height: 20px;
+    position: absolute; left: 4px; right: 4px; height: 24px;
     top: 50%; transform: translateY(-50%); border-radius: 3px;
     background: linear-gradient(#e6e6e6, #b0b0b0);
     border: 1px solid #0c0c0c; box-shadow: 0 2px 5px #000b;
@@ -137,7 +142,7 @@
     border: 1px dashed #2e2f31;
   }
   #knob {
-    position: absolute; width: 52px; height: 52px; border-radius: 50%;
+    position: absolute; width: 62px; height: 62px; border-radius: 50%;
     left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2;
     background: radial-gradient(circle at 50% 35%, #3d3e40, #232426 75%);
     border: 1px solid #0b0b0c; box-shadow: 0 3px 10px #000c, inset 0 1px 0 #ffffff18;
@@ -145,60 +150,60 @@
   }
   #knob::after {
     content: ""; position: absolute; inset: 0; margin: auto;
-    width: 18px; height: 18px; border-radius: 50%;
+    width: 22px; height: 22px; border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #f4573f, #b41d0e 70%);
     border: 1px solid #7c150a;
   }
-  .stickFoot { flex: none; padding-top: 12px; }
-  .hint { font-size: 10px; color: var(--faint); margin-top: 8px; line-height: 1.6; }
+  .stickFoot { flex: none; padding-top: 16px; }
+  .hint { font-size: 12px; color: var(--faint); margin-top: 10px; line-height: 1.7; }
 
   /* ---- 右パネル ---- */
-  #rightPanel { padding: 14px 16px; gap: 14px; overflow-y: auto; }
+  #rightPanel { padding: 22px; gap: 20px; }
   section h2 {
-    font-size: 10px; font-weight: 600; color: var(--dim);
-    letter-spacing: .12em; margin-bottom: 8px;
+    font-size: 12px; font-weight: 600; color: var(--dim);
+    letter-spacing: .12em; margin-bottom: 10px;
   }
   .box {
-    background: var(--panel2); border: 1px solid #0a0a0a; border-radius: 5px;
-    padding: 12px;
+    background: var(--panel2); border: 1px solid #0a0a0a; border-radius: 6px;
+    padding: 18px;
   }
 
   /* ---- 共通コントロール ---- */
-  .row { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
+  .row { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
   .row:first-of-type { margin-top: 0; }
-  .row label { font-size: 11px; color: var(--dim); min-width: 58px; }
+  .row label { font-size: 13px; color: var(--dim); min-width: 76px; }
   .val {
-    min-width: 52px; text-align: right; font-size: 12px; color: #e8e9ea;
+    min-width: 62px; text-align: right; font-size: 14px; color: #e8e9ea;
     font-variant-numeric: tabular-nums;
-    border-bottom: 2px solid var(--accent); padding-bottom: 1px;
+    border-bottom: 2px solid var(--accent); padding-bottom: 2px;
   }
   input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; height: 20px; background: transparent; }
-  input[type=range]::-webkit-slider-runnable-track { height: 3px; background: #454649; border-radius: 2px; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #454649; border-radius: 2px; }
   input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
     background: linear-gradient(#e6e6e6, #b8b8b8); border: 1px solid #0c0c0c;
-    margin-top: -5.5px; box-shadow: 0 1px 3px #000b;
+    margin-top: -7px; box-shadow: 0 1px 3px #000b;
   }
-  input[type=range]::-moz-range-track { height: 3px; background: #454649; border-radius: 2px; }
+  input[type=range]::-moz-range-track { height: 4px; background: #454649; border-radius: 2px; }
   input[type=range]::-moz-range-thumb {
-    width: 13px; height: 13px; border-radius: 50%;
+    width: 17px; height: 17px; border-radius: 50%;
     background: #ccc; border: 1px solid #0c0c0c;
   }
   select {
     flex: 1; background: linear-gradient(#2e2f31, #26272a); color: var(--text);
-    border: 1px solid #0c0c0c; border-radius: 4px; padding: 6px 8px; font-size: 12px;
+    border: 1px solid #0c0c0c; border-radius: 5px; padding: 10px 12px; font-size: 14px;
   }
   button {
     background: linear-gradient(#333436, #28292b); color: #c9cacc;
-    border: 1px solid #0c0c0c; border-radius: 4px;
-    padding: 8px 13px; font-size: 12px; cursor: pointer;
+    border: 1px solid #0c0c0c; border-radius: 5px;
+    padding: 11px 17px; font-size: 14px; cursor: pointer;
     box-shadow: inset 0 1px 0 #ffffff12;
   }
   button:hover { background: linear-gradient(#3b3c3e, #2e2f31); }
   button:active { background: var(--accent); color: #1a1000; border-color: #a55708; }
 
-  .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .presets button { padding: 15px 0; font-size: 14px; font-weight: 600; color: #909295; }
+  .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .presets button { padding: 20px 0; font-size: 17px; font-weight: 600; color: #909295; }
   .presets button.saved { color: var(--accent); border-color: #7a4a10; }
 
   button.rec { font-weight: 700; letter-spacing: .05em; }
@@ -228,6 +233,7 @@
 <nav id="camTabs"></nav>
 
 <main>
+<div id="wrap">
   <div class="panel">
     <div id="onairBanner">
       <span class="cam" id="onairCam">Cam 1</span>
@@ -312,6 +318,7 @@
       </div>
     </section>
   </div>
+</div>
 </main>
 <div id="toast"></div>
 
