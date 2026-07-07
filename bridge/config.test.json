@@ -1,0 +1,10 @@
+{
+  "atem_ip": "127.0.0.1",
+  "web_port": 8090,
+  "gimbals": {
+    "1": { "ip": "127.0.0.1", "port": 5005, "max_speed_dps": 90, "expo": 0.5 }
+  },
+  "cameras": {
+    "1": { "mode": "mock" }
+  }
+}

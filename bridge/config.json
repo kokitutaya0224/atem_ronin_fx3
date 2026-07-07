@@ -1,0 +1,228 @@
+{
+  "atem_ip": "192.168.10.240",
+  "web_port": 8090,
+  "gimbals": {
+    "1": {
+      "ip": "192.168.10.51",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "2": {
+      "ip": "192.168.10.52",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "3": {
+      "ip": "192.168.10.53",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "4": {
+      "ip": "192.168.10.54",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "5": {
+      "ip": "192.168.10.55",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "6": {
+      "ip": "192.168.10.56",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "7": {
+      "ip": "192.168.10.57",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "8": {
+      "ip": "192.168.10.58",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "9": {
+      "ip": "192.168.10.59",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "10": {
+      "ip": "192.168.10.60",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "11": {
+      "ip": "192.168.10.61",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "12": {
+      "ip": "192.168.10.62",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "13": {
+      "ip": "192.168.10.63",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "14": {
+      "ip": "192.168.10.64",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "15": {
+      "ip": "192.168.10.65",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "16": {
+      "ip": "192.168.10.66",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "17": {
+      "ip": "192.168.10.67",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "18": {
+      "ip": "192.168.10.68",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "19": {
+      "ip": "192.168.10.69",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    },
+    "20": {
+      "ip": "192.168.10.70",
+      "port": 5005,
+      "max_speed_dps": 90,
+      "expo": 0.5
+    }
+  },
+  "cameras": {
+    "1": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "2": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "3": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "4": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "5": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "6": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "7": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "8": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "9": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "10": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "11": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "12": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "13": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "14": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "15": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "16": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "17": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "18": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "19": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    },
+    "20": {
+      "mode": "mock",
+      "wrapper": "../fx3_wrapper/build/fx3cli",
+      "serial": ""
+    }
+  }
+}

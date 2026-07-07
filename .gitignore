@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+bridge/.venv/
+
+# 実行時に生成されるファイル
+bridge/presets.json
+
+# ビルド成果物
+fx3_wrapper/build/
+firmware/.pio/
+
+# WiFi認証情報を書き込んだ場合はコミットしない運用に
+# (config.hはプレースホルダのままコミット)
+
+# macOS
+.DS_Store

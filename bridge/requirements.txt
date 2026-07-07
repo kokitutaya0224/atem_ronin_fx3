@@ -1,0 +1,3 @@
+PyATEMMax>=1.0b9
+flask>=3.0
+flask-sock>=0.7
