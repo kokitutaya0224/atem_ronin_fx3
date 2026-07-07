@@ -117,30 +117,40 @@ class CameraManager:
         return {cid: c.state for cid, c in self.cams.items()}
 
     def handle_ccu(self, cam, field, value):
-        """ATEMのCCU操作をカメラコマンドへ翻訳する"""
+        """ATEMのCCU操作をカメラコマンドへ翻訳する
+
+        戻り値: 変換後の (param, value)。カメラへ流さなかった場合は None。
+        呼び出し側はこれをWebパネルへブロードキャストしてUIを同期する。
+        """
         if cam not in self.cams:
-            return
+            return None
+        param = v = None
         try:
             if field == "iris":
                 # ATEM側は正規化値想定。生値(0-2048等)なら実機ログを見て要調整
                 v = float(value)
                 if v > 1.0:
                     v = v / 2048.0
-                self.set_param(cam, "iris_norm", round(v, 4))
+                param, v = "iris_norm", round(v, 4)
             elif field == "whiteBalance":
-                self.set_param(cam, "wb_kelvin", int(value))
+                param, v = "wb_kelvin", int(value)
             elif field == "shutter":
                 # ATEMはマイクロ秒 → 1/x秒へ
                 us = int(value)
                 if us > 0:
-                    self.set_param(cam, "shutter", int(round(1_000_000 / us)))
+                    param, v = "shutter", int(round(1_000_000 / us))
             elif field == "gain":
                 iso = GAIN_DB_TO_ISO.get(int(value))
                 if iso:
-                    self.set_param(cam, "iso", iso)
+                    param, v = "iso", iso
             elif field == "focus":
-                self.set_param(cam, "focus_norm", float(value))
+                param, v = "focus_norm", float(value)
             elif field == "zoom":
-                self.set_param(cam, "zoom_speed", float(value))
+                param, v = "zoom_speed", float(value)
         except (TypeError, ValueError) as e:
             log.debug("CCU変換スキップ %s=%s: %s", field, value, e)
+            return None
+        if param is None:
+            return None
+        self.set_param(cam, param, v)
+        return (param, v)

@@ -53,7 +53,11 @@ def on_tally(tally):
 
 def on_ccu(cam, field, value):
     log.info("CCU: cam%s %s=%s", cam, field, value)
-    cameras.handle_ccu(cam, field, value)
+    translated = cameras.handle_ccu(cam, field, value)
+    # ATEM Software Control側での操作をWebパネルのUIにも反映させる
+    if translated:
+        broadcast({"t": "ccu", "cam": cam,
+                   "param": translated[0], "value": translated[1]})
 
 cam_ids = sorted(set(list(gimbals.keys()) + list(cameras.cams.keys())))
 atem = AtemLink(CONFIG["atem_ip"], cam_ids, on_tally=on_tally, on_ccu=on_ccu)

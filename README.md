@@ -14,6 +14,7 @@ ATEM ──(LAN)──> bridge/app.py ──(UDP/WiFi)──> ESP32+CANトラン
 | パン・チルト（ジョイスティック/画面） | パネル → ブリッジ → ESP32 → CAN速度制御 |
 | プリセット保存・呼び出し | CAN角度取得 + 位置制御 |
 | タリー表示・CCU横取り（アイリス/WB/シャッター/ゲイン） | PyATEMMax |
+| ATEM Software Controlカメラページとの併用（操作をパネルUIへ同期） | CCU横取り → WebSocket配信 |
 | FX3露出・WB・フォーカス・ズーム・REC | Sony Camera Remote SDK |
 
 ## 必要なハードウェア
