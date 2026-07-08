@@ -1,5 +1,6 @@
 // ATEM PTZ Bridge — ESP32ファームウェア
-// WiFi UDPで受けたコマンドをDJI R SDK (CAN)へ中継する
+// LAN(有線Ethernet)またはWiFiのUDPで受けたコマンドをDJI R SDK (CAN)へ中継する
+// ビルド環境で切替: esp32-poe=有線LAN(NET_ETH) / esp32dev=WiFi(NET_WIFI)
 //
 // UDPプロトコル (JSON, bridge/gimbal_link.py と対):
 //   {"t":"spd","y":<0.1deg/s>,"p":...,"r":...}      速度指令
@@ -8,8 +9,12 @@
 //   応答 {"t":"ang","y":...,"p":...,"r":...}         (0.1deg)
 
 #include <Arduino.h>
+#ifdef NET_ETH
+#include <ETH.h>   // Olimex ESP32-POE: LAN8720のピン定義はボードバリアントが持つ
+#else
 #include <WiFi.h>
-#include <WiFiUdp.h>
+#endif
+#include <WiFiUdp.h>  // UDPソケットはlwIP共通なので有線LANでもこのクラスを使う
 #include <ArduinoJson.h>
 #include "config.h"
 #include "dji_r_sdk.h"
@@ -26,6 +31,20 @@ uint32_t lastSpdSent = 0;
 void setup() {
     Serial.begin(115200);
 
+#ifdef NET_ETH
+    // 有線LAN（リンク確立を待ってから固定IPを設定）
+    ETH.begin();
+#if USE_STATIC_IP
+    ETH.config(IPAddress(STATIC_IP), IPAddress(GATEWAY_IP), IPAddress(SUBNET_MASK));
+#endif
+    Serial.print("Ethernetリンク待ち");
+    while (!ETH.linkUp()) { delay(300); Serial.print("."); }
+#if !USE_STATIC_IP
+    while (ETH.localIP() == IPAddress()) { delay(300); Serial.print("."); }  // DHCP待ち
+#endif
+    Serial.printf("\nIP: %s (Ethernet)\n", ETH.localIP().toString().c_str());
+#else
+    // WiFi（検証・予備用）
 #if USE_STATIC_IP
     WiFi.config(IPAddress(STATIC_IP), IPAddress(GATEWAY_IP), IPAddress(SUBNET_MASK));
 #endif
@@ -33,7 +52,8 @@ void setup() {
     WiFi.begin(WIFI_SSID, WIFI_PASS);
     Serial.print("WiFi接続中");
     while (WiFi.status() != WL_CONNECTED) { delay(300); Serial.print("."); }
-    Serial.printf("\nIP: %s\n", WiFi.localIP().toString().c_str());
+    Serial.printf("\nIP: %s (WiFi)\n", WiFi.localIP().toString().c_str());
+#endif
 
     udp.begin(UDP_PORT);
 

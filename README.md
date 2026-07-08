@@ -3,10 +3,16 @@
 ATEMスイッチャーから Sony FX3 と DJI Ronin RS 4 Pro を統合制御し、
 「シネマカメラ＋ジンバル」をPTZカメラ化するブリッジシステム。
 
+**全機器を有線LANで接続する**（現場のWiFiに依存しない。Middle Control同様の
+「1台のMac＋1台のルーター」構成）。
+
 ```
-ATEM ──(LAN)──> bridge/app.py ──(UDP/WiFi)──> ESP32+CANトランシーバ ──> Ronin RS4 Pro
-                    │   └──(USBサブプロセス)──> fx3_wrapper/fx3cli ──> FX3
-                    └──(WebSocket)──> 操作パネル(ブラウザ/ゲームパッド)
+ATEM ──(LAN)──┐
+              ├─ PoEスイッチ ─(LAN/PoE 1本)─> ESP32-POE+CANトランシーバ ──> Ronin RS4 Pro
+Mac(bridge) ──┘      │                          （カメラ台数分）
+   │                 └──────────────────────── 操作用iPad等もこのLANに参加可
+   ├──(USBサブプロセス)──> fx3_wrapper/fx3cli ──(USB-C)──> FX3
+   └──(WebSocket)──> 操作パネル(ブラウザ/ゲームパッド)
 ```
 
 | 機能 | 経路 |
@@ -17,15 +23,32 @@ ATEM ──(LAN)──> bridge/app.py ──(UDP/WiFi)──> ESP32+CANトラン
 | ATEM Software Controlカメラページとの併用（操作をパネルUIへ同期） | CCU横取り → WebSocket配信 |
 | FX3露出・WB・フォーカス・ズーム・REC | Sony Camera Remote SDK |
 
-## 必要なハードウェア
+## 必要なハードウェア（1カメラ分）
 
-- **ESP32 DevKit**（技適取得済みモジュール搭載品）
+- **Olimex ESP32-POE-ISO**（有線LAN+PoE給電。ISO版は電源絶縁付きで機材保護の
+  ため推奨。約4,000円）※WiFi版で検証する場合のみ汎用ESP32 DevKitでも可
 - **SN65HVD230 CANトランシーバモジュール**（3.3V用・数百円）
-- **RonoinのRSSポートへの接続ケーブル**（下記⚠️参照）
+- **RoninのRSSポートへの接続ケーブル**（下記⚠️参照）
+- **PoE対応スイッチまたはPoEインジェクタ**（全カメラ共用）
 - USB-Cケーブル（Mac ↔ FX3）
 - ゲームパッド（PS4/PS5/Xbox系、ブラウザのGamepad API対応なら何でも可）
 
-### 配線
+### 配線（ESP32-POE 有線LAN版・本番用）
+
+```
+ESP32-POE GPIO14 ── CTX ┐
+ESP32-POE GPIO13 ── CRX │ SN65HVD230 ── CANH ── Ronin RSS CANH
+ESP32-POE 3.3V   ── VCC │            └─ CANL ── Ronin RSS CANL
+ESP32-POE GND    ── GND ┘            (GND共通も接続)
+LAN端子 ── PoEスイッチへ（データ+電源がLANケーブル1本）
+```
+
+**⚠️ ピンがWiFi版と違う**: EthernetのRMIIがGPIO19/21/22/25/26/27を占有する
+ため、ESP32-POEではCANをGPIO14(CTX)/13(CRX)に配線する。GPIO12はPHY電源用で
+使用不可。ビルド環境(`-e esp32-poe`)を選べばファームウェアは自動で正しい
+ピンを使う。
+
+### 配線（汎用ESP32 WiFi版・検証用）
 
 ```
 ESP32 GPIO21 ── CTX ┐
@@ -55,8 +78,11 @@ python app.py
 
 ```bash
 cd firmware
-# src/config.h の WiFi SSID/パスワード・固定IPを編集
-pio run -t upload && pio device monitor
+# src/config.h の固定IPを編集（bridge/config.jsonのgimbals.ipと合わせる）
+# 有線LAN版（本番・Olimex ESP32-POE）:
+pio run -e esp32-poe -t upload && pio device monitor
+# WiFi版（検証用・要SSID/パスワード編集）:
+pio run -e esp32dev -t upload && pio device monitor
 ```
 
 ### 3. FX3ラッパー
@@ -65,8 +91,8 @@ pio run -t upload && pio device monitor
 
 ## ⚠️ 実機接続前に確認すべきこと（重要）
 
-1. **RS 4「無印」はRSSポート非搭載の可能性が高い。CAN制御はRS 4 Pro
-   （またはRS 3 Pro / RS 2）が前提。** 実機のポートを確認すること。
+1. ~~RS 4「無印」はRSSポート非搭載の可能性~~ → **ユーザー実機はRS 4 Proと
+   確認済み（2026-07-09）。R SDK公式対応機種なのでこのリスクは解消。**
 2. **RSSポートのピンアウトは公式資料（DJI R SDK文書）で要確認。**
    DJI開発者サイトでR SDKのライセンスに同意するとプロトコル文書と
    ピン配置が入手できる。コネクタは市販のRSSケーブル or DJI R SDK
