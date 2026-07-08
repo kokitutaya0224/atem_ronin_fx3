@@ -74,6 +74,17 @@ python app.py
 実カメラなしで確認できる**。FX3実機に繋ぐときは fx3_wrapper をビルドして
 `"mode": "fx3"` に変更。
 
+**FX3の接続は有線LAN推奨**（USBは5mの距離制約があり現場に不向き）。
+FX3のUSB-C端子に市販のUSB-LAN変換アダプタ（AX88179チップ系が定番）を
+装着し、カメラメニューで有線LANのPCリモート機能を有効化、config.jsonで
+IPを指定する:
+
+```json
+"cameras": { "1": { "mode": "fx3", "wrapper": "../fx3_wrapper/build/fx3cli", "ip": "192.168.10.61" } }
+```
+
+`ip` を省略するとUSB直結（検証用）。
+
 ### 2. ESP32ファームウェア
 
 ```bash
@@ -97,6 +108,13 @@ pio run -e esp32dev -t upload && pio device monitor
    DJI開発者サイトでR SDKのライセンスに同意するとプロトコル文書と
    ピン配置が入手できる。コネクタは市販のRSSケーブル or DJI R SDK
    開発ボードの利用が確実。
+   **補強材料（2026-07-09）**: Middle Things APC-RはRS2/RS3 Pro/RS4/
+   RS4 ProをCanBUSケーブルで制御しており（=RS 4 ProのCAN外部制御は
+   製品レベルで実証済み）、さらにRonin側ポートからCANBUSケーブル経由の
+   給電まで可能。RS 4 Pro側の物理コネクタはUSB-C形状のため、
+   ①DJI R SDK文書でUSB-CのどのピンにCANH/CANLが出ているか特定する、
+   ②APC-R用CANBUSケーブル等の既製ケーブルを流用する、のいずれかで
+   ブレークアウトする。
 3. **CANプロトコル実装の検証**: フレーム形式・CRC(init 0x3AA3)・
    コマンドID(0x0E/0x00,0x01,0x02)は実績あるOSS実装
    （rileyharmon/DJI-Ronin-RS2-Log-and-Replay）から採ったが、

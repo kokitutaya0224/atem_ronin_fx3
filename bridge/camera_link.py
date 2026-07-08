@@ -47,16 +47,23 @@ class MockCamera(BaseCamera):
 
 
 class Fx3Camera(BaseCamera):
-    def __init__(self, cam_id, wrapper_path, serial=""):
+    def __init__(self, cam_id, wrapper_path, serial="", ip=""):
         self.id = cam_id
         self._state = {"rec": False, "connected": False, "mode": "fx3"}
         self._lock = threading.Lock()
         self._proc = None
         path = os.path.abspath(
             os.path.join(os.path.dirname(__file__), wrapper_path))
+        # ip指定時は有線LAN接続（FX3にUSB-LANアダプタを装着し同一LANに参加させる）。
+        # 未指定はUSB直結（従来）
+        args = [path]
+        if ip:
+            args += ["--ip", ip]
+        elif serial:
+            args += ["--serial", serial]
         try:
             self._proc = subprocess.Popen(
-                [path, "--serial", serial] if serial else [path],
+                args,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
             threading.Thread(target=self._read_loop, daemon=True).start()
             self._send({"cmd": "connect"})
@@ -97,7 +104,8 @@ class CameraManager:
         for cam_id, c in config.items():
             cid = int(cam_id)
             if c.get("mode") == "fx3":
-                self.cams[cid] = Fx3Camera(cid, c["wrapper"], c.get("serial", ""))
+                self.cams[cid] = Fx3Camera(cid, c["wrapper"],
+                                           c.get("serial", ""), c.get("ip", ""))
             else:
                 self.cams[cid] = MockCamera(cid)
 

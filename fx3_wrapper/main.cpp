@@ -23,6 +23,11 @@
 #include <cstring>
 #include <string>
 #include <atomic>
+#include <arpa/inet.h>  // --ip指定時のIPアドレス変換用
+
+// --ip <addr> 指定時は有線LAN接続（FX3にUSB-LANアダプタ装着、
+// カメラ側で「PCリモート機能(有線LAN)」を有効にしておく）
+static std::string g_ip;
 
 #if __has_include("CameraRemote_SDK.h")
 #define HAS_CRSDK 1
@@ -88,6 +93,26 @@ static Callback g_cb;
 
 static bool sdkConnect() {
     if (!SDK::Init()) return false;
+
+    if (!g_ip.empty()) {
+        // ---- 有線LAN接続（USB-LANアダプタ経由、Camera Remote SDK公式対応）----
+        // TODO: 引数のシグネチャはSDKバージョンで要確認（RemoteCliのEthernet接続例参照）。
+        //       MACアドレス引数が必須の版では実機のMACを渡す。FX3のファームウェアに
+        //       よってはSSH認証(CrSSHsupport_ON+フィンガープリント)が必要な場合あり。
+        SDK::ICrCameraObjectInfo *cam = nullptr;
+        auto err = SDK::CreateCameraObjectInfoEthernetConnection(
+            &cam,
+            SDK::CrCameraDeviceModelList::CrCameraDeviceModel_ILME_FX3,
+            inet_addr(g_ip.c_str()),
+            nullptr,
+            SDK::CrSSHsupport_OFF);
+        if (err != SDK::CrError_None || !cam) return false;
+        auto cerr2 = SDK::Connect(cam, &g_cb, &g_handle);
+        cam->Release();
+        return cerr2 == SDK::CrError_None;
+    }
+
+    // ---- USB接続（従来） ----
     SDK::ICrEnumCameraObjectInfo *list = nullptr;
     if (SDK::EnumCameraObjects(&list) != SDK::CrError_None || !list) return false;
     if (list->GetCount() == 0) { list->Release(); return false; }
@@ -156,7 +181,9 @@ static void handle(const std::string &cmd, double value) {
 #endif
 
 int main(int argc, char **argv) {
-    (void)argc; (void)argv;
+    for (int i = 1; i < argc - 1; i++) {
+        if (strcmp(argv[i], "--ip") == 0) g_ip = argv[i + 1];
+    }
     status(false, false);
     std::string line;
     char buf[1024];
