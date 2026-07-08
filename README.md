@@ -85,7 +85,9 @@ python app.py
 **FX3の接続は有線LAN推奨**（USBは5mの距離制約があり現場に不向き）。
 FX3のUSB-C端子に市販のUSB-LAN変換アダプタ（AX88179チップ系が定番）を
 装着し、カメラメニューで有線LANのPCリモート機能を有効化、config.jsonで
-IPを指定する:
+IPを指定する。アダプタはバスパワーでPoE等は不要。
+**⚠️ LANアダプタがUSB-C端子を占有するためUSB給電が同時に使えない**。
+長時間の本番はNP-FZ100型ダミーバッテリー（DCカプラー）でのAC給電を推奨:
 
 ```json
 "cameras": { "1": { "mode": "fx3", "wrapper": "../fx3_wrapper/build/fx3cli", "ip": "192.168.10.61" } }
