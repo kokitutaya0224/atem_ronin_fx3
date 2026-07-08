@@ -5,51 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>ATEM PTZ Bridge</title>
 <style>
+  /* Symphonityブランドトーン: 白背景 + 温グレーカード + ネイビー + コバルトブルー */
   :root {
-    --bg: #111213; --panel: #1c1d1f; --panel2: #232426; --line: #000;
-    --inner-line: #313234; --text: #d9dadc; --dim: #85878a; --faint: #5a5c5f;
-    --accent: #ff8c1a; --pgm: #d3392a; --pvw: #3f9d3c; --rec: #d3392a;
+    --bg: #ffffff; --panel: #f0efec; --panel2: #ffffff; --line: #dddad4;
+    --inner-line: #eceae5; --text: #1c2438; --dim: #6d7280; --faint: #b3b5bc;
+    --navy: #0e1a3c; --accent: #1d2fe0; --accent-soft: #e8ebff;
+    --pgm: #e03c2a; --pvw: #2f9e44; --rec: #e03c2a;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     background: var(--bg); color: var(--text);
-    font-family: -apple-system, "Hiragino Sans", sans-serif;
+    font-family: "Avenir Next", "Helvetica Neue", -apple-system, "Hiragino Sans", sans-serif;
+    -webkit-font-smoothing: antialiased;
     user-select: none; display: flex; flex-direction: column; overflow: hidden;
   }
 
   /* ---- タイトルバー ---- */
   header {
-    display: flex; align-items: center; gap: 10px; flex: none;
-    height: 50px; padding: 0 22px;
-    background: linear-gradient(#2c2d2f, #242527);
-    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 12px; flex: none;
+    height: 64px; padding: 0 30px;
+    background: var(--bg);
   }
-  header h1 { font-size: 17px; font-weight: 300; letter-spacing: .04em; color: #cfd0d2; }
+  header h1 { font-size: 19px; font-weight: 500; letter-spacing: .01em; color: var(--navy); }
   header h1 b { font-weight: 700; }
   .badges { margin-left: auto; display: flex; gap: 8px; }
   .badge {
-    font-size: 12px; padding: 4px 11px; border-radius: 3px;
-    background: #1a1b1d; color: var(--faint); border: 1px solid #303134;
+    font-size: 12px; font-weight: 600; padding: 7px 15px; border-radius: 999px;
+    background: var(--panel); color: var(--dim); border: none;
   }
-  .badge.on { color: #8fd48c; }
+  .badge.on { color: var(--accent); background: var(--accent-soft); }
 
-  /* ---- カメラタブ ---- */
+  /* ---- カメラタブ（ピル型ナビ） ---- */
   #camTabs {
-    flex: none; display: flex; justify-content: safe center; gap: 2px;
-    background: #0c0d0e; border-bottom: 1px solid var(--line);
-    padding: 0 10px; overflow-x: auto; scrollbar-width: none;
+    flex: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px;
+    background: var(--panel); border-radius: 26px; padding: 6px;
+    margin: 6px auto 0; max-width: 94%; width: fit-content;
   }
-  #camTabs::-webkit-scrollbar { display: none; }
   #camTabs button {
-    background: none; border: none; color: #77797c; cursor: pointer;
-    font-size: 14px; padding: 12px 16px 10px; border-bottom: 3px solid transparent;
-    white-space: nowrap; font-weight: 500;
+    background: none; border: none; color: #4a5165; cursor: pointer;
+    font-size: 14px; padding: 10px 14px; border-radius: 999px;
+    white-space: nowrap; font-weight: 600;
   }
-  #camTabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  #camTabs button.active { color: #fff; background: var(--navy); }
   #camTabs button .dot {
     display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    margin-right: 6px; background: #333; vertical-align: 1px;
+    margin-right: 7px; background: #d3d1cb; vertical-align: 1px;
   }
   #camTabs button.pgm .dot { background: var(--pgm); box-shadow: 0 0 5px var(--pgm); }
   #camTabs button.pvw .dot { background: var(--pvw); }
@@ -63,8 +64,7 @@
   }
   .panel {
     background: var(--panel); display: flex; flex-direction: column; min-width: 0;
-    border: 1px solid #2c2d2f; border-radius: 8px; overflow: hidden;
-    box-shadow: 0 12px 32px #0008;
+    border: none; border-radius: 24px; overflow: hidden;
   }
   @media (max-width: 1100px) {
     #wrap { width: 94%; grid-template-columns: 1fr; }
@@ -72,26 +72,27 @@
 
   /* ---- オンエアバナー ---- */
   #onairBanner {
-    flex: none; display: flex; align-items: center; height: 54px; padding: 0 20px;
-    background: linear-gradient(#3a3b3d, #2e2f31); border-bottom: 1px solid var(--line);
+    flex: none; display: flex; align-items: center; height: 60px; padding: 0 26px;
+    background: transparent;
   }
-  #onairBanner .cam { font-size: 21px; font-weight: 700; color: #bbb; }
-  #onairBanner .state { margin-left: 14px; font-size: 17px; font-weight: 600; color: var(--faint); }
-  #onairBanner.pgm { background: linear-gradient(#e04a35, #c22f1f); }
-  #onairBanner.pvw { background: linear-gradient(#4caf49, #35872f); }
+  #onairBanner .cam { font-size: 21px; font-weight: 700; color: var(--navy); }
+  #onairBanner .state { margin-left: 14px; font-size: 15px; font-weight: 600; color: var(--dim); }
+  #onairBanner.pgm { background: var(--pgm); }
+  #onairBanner.pvw { background: var(--pvw); }
   #onairBanner.pgm .cam, #onairBanner.pgm .state,
   #onairBanner.pvw .cam, #onairBanner.pvw .state { color: #fff; }
-  #angles { margin-left: auto; font-size: 13px; color: #ffffffaa; font-variant-numeric: tabular-nums; }
+  #angles { margin-left: auto; font-size: 13px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  #onairBanner.pgm #angles, #onairBanner.pvw #angles { color: #ffffffcc; }
 
   /* ---- 数値リードアウト ---- */
   #readout {
     flex: none; display: grid; grid-template-columns: repeat(4, 1fr);
-    background: #191a1c; border-bottom: 1px solid var(--line);
+    background: var(--panel2); border-radius: 16px; margin: 0 22px;
   }
-  #readout .cell { padding: 10px 8px 11px; text-align: center; border-right: 1px solid #0006; }
+  #readout .cell { padding: 12px 8px 13px; text-align: center; border-right: 1px solid var(--inner-line); }
   #readout .cell:last-child { border-right: none; }
-  #readout .k { font-size: 11px; color: var(--faint); letter-spacing: .06em; }
-  #readout .v { font-size: 16px; color: #e8e9ea; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  #readout .k { font-size: 11px; color: var(--dim); letter-spacing: .06em; }
+  #readout .v { font-size: 18px; font-weight: 600; color: var(--navy); margin-top: 3px; font-variant-numeric: tabular-nums; }
 
   /* ---- ジョイスティック ---- */
   #stickWrap { display: flex; flex-direction: column; padding: 22px; }
@@ -100,122 +101,149 @@
     flex: none; width: 64px; display: flex; flex-direction: column;
     align-items: center; gap: 6px;
   }
-  .vcap { font-size: 12px; color: var(--dim); }
-  .vname { font-size: 11px; color: var(--faint); letter-spacing: .08em; margin-top: 3px; }
-  .vval { font-size: 13px; color: #e8e9ea; font-variant-numeric: tabular-nums; }
+  .vcap { font-size: 13px; color: var(--dim); }
+  .vname { font-size: 11px; color: var(--dim); letter-spacing: .08em; margin-top: 3px; }
+  .vval { font-size: 13px; font-weight: 600; color: var(--navy); font-variant-numeric: tabular-nums; }
   .vtrack {
-    position: relative; flex: 1; width: 44px; border-radius: 5px;
-    background: linear-gradient(#141517, #1c1d1f);
-    border: 1px solid #0a0a0a; box-shadow: inset 0 1px 6px #000a;
+    position: relative; flex: 1; width: 44px; border-radius: 999px;
+    background: var(--panel2); border: 1px solid var(--line);
     touch-action: none; cursor: grab;
   }
   .vticks {
-    position: absolute; left: 8px; right: 8px; top: 10px; bottom: 10px;
-    background: repeating-linear-gradient(to bottom, #3a3b3d 0 1px, transparent 1px 10px);
+    position: absolute; left: 10px; right: 10px; top: 14px; bottom: 14px;
+    background: repeating-linear-gradient(to bottom, #e7e5e0 0 1px, transparent 1px 10px);
     pointer-events: none;
   }
   .vthumb {
-    position: absolute; left: 4px; right: 4px; height: 24px;
-    top: 50%; transform: translateY(-50%); border-radius: 3px;
-    background: linear-gradient(#e6e6e6, #b0b0b0);
-    border: 1px solid #0c0c0c; box-shadow: 0 2px 5px #000b;
+    position: absolute; width: 34px; height: 34px; left: 50%; margin-left: -17px;
+    top: 50%; border-radius: 50%;
+    background: var(--navy); border: none;
+    box-shadow: 0 2px 8px rgba(14, 26, 60, .35);
     pointer-events: none;
   }
   .vtrack .centerline {
-    position: absolute; left: 5px; right: 5px; top: 50%; height: 1px;
-    background: #4a4b4f; pointer-events: none;
+    position: absolute; left: 8px; right: 8px; top: 50%; height: 1px;
+    background: #d8d6d0; pointer-events: none;
   }
   #stickArea {
-    position: relative; flex: 1; min-height: 0; border-radius: 6px;
-    background:
-      radial-gradient(circle at 50% 45%, #232426 0%, #1a1b1d 75%),
-      #1a1b1d;
-    border: 1px solid #0a0a0a; box-shadow: inset 0 1px 8px #000a;
+    position: relative; flex: 1; min-height: 0; border-radius: 20px;
+    background: var(--panel2); border: 1px solid var(--line);
     touch-action: none; cursor: grab;
   }
-  #stickArea .cross-v, #stickArea .cross-h { position: absolute; background: #313234; }
+  #stickArea .cross-v, #stickArea .cross-h { position: absolute; background: #eceae5; }
   #stickArea .cross-v { left: 50%; top: 5%; bottom: 5%; width: 1px; }
   #stickArea .cross-h { top: 50%; left: 3%; right: 3%; height: 1px; }
   #stickArea .ring {
     position: absolute; left: 50%; top: 50%; width: 56%; aspect-ratio: 1;
     transform: translate(-50%, -50%); border-radius: 50%;
-    border: 1px dashed #2e2f31;
+    border: 1px dashed #dedcd6;
   }
+  /* ATEM SC風の立体ノブ（外リム+内円+方向矢印）。中央ドットはブランドブルー */
   #knob {
-    position: absolute; width: 62px; height: 62px; border-radius: 50%;
+    position: absolute; width: 66px; height: 66px; border-radius: 50%;
     left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2;
-    background: radial-gradient(circle at 50% 35%, #3d3e40, #232426 75%);
-    border: 1px solid #0b0b0c; box-shadow: 0 3px 10px #000c, inset 0 1px 0 #ffffff18;
+    background: radial-gradient(circle at 50% 32%, #47484b, #232426 78%);
+    border: 1px solid #17181a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .45), inset 0 1px 0 #ffffff20;
     pointer-events: none;
+  }
+  #knob::before {
+    content: ""; position: absolute; inset: 7px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, #2c2d2f, #1e1f21 80%);
+    box-shadow: inset 0 2px 5px #000a;
   }
   #knob::after {
     content: ""; position: absolute; inset: 0; margin: auto;
-    width: 22px; height: 22px; border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, #f4573f, #b41d0e 70%);
-    border: 1px solid #7c150a;
+    width: 22px; height: 22px; border-radius: 50%; z-index: 2;
+    background: var(--accent); border: none;
+  }
+  #knob .arr { position: absolute; width: 0; height: 0; z-index: 1; }
+  #knob .arr.up {
+    left: 50%; top: 10px; transform: translateX(-50%);
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-bottom: 5px solid #6a6c70;
+  }
+  #knob .arr.down {
+    left: 50%; bottom: 10px; transform: translateX(-50%);
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid #6a6c70;
+  }
+  #knob .arr.left {
+    top: 50%; left: 10px; transform: translateY(-50%);
+    border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+    border-right: 5px solid #6a6c70;
+  }
+  #knob .arr.right {
+    top: 50%; right: 10px; transform: translateY(-50%);
+    border-top: 4px solid transparent; border-bottom: 4px solid transparent;
+    border-left: 5px solid #6a6c70;
   }
   .stickFoot { flex: none; padding-top: 16px; }
-  .hint { font-size: 12px; color: var(--faint); margin-top: 10px; line-height: 1.7; }
+  .hint { font-size: 12px; color: var(--dim); margin-top: 10px; line-height: 1.7; }
 
   /* ---- 右パネル ---- */
-  #rightPanel { padding: 22px; gap: 20px; }
+  #rightPanel { padding: 24px; gap: 22px; }
   section h2 {
-    font-size: 12px; font-weight: 600; color: var(--dim);
-    letter-spacing: .12em; margin-bottom: 10px;
+    font-size: 13px; font-weight: 700; color: var(--navy);
+    letter-spacing: .04em; margin-bottom: 10px;
   }
   .box {
-    background: var(--panel2); border: 1px solid #0a0a0a; border-radius: 6px;
-    padding: 18px;
+    background: var(--panel2); border: none; border-radius: 16px;
+    padding: 20px;
   }
 
   /* ---- 共通コントロール ---- */
   .row { display: flex; gap: 12px; align-items: center; margin-top: 16px; }
   .row:first-of-type { margin-top: 0; }
-  .row label { font-size: 13px; color: var(--dim); min-width: 76px; }
+  .row label { font-size: 14px; color: var(--dim); min-width: 76px; }
   .val {
-    min-width: 62px; text-align: right; font-size: 14px; color: #e8e9ea;
+    min-width: 62px; text-align: right; font-size: 14px; font-weight: 600; color: var(--navy);
     font-variant-numeric: tabular-nums;
     border-bottom: 2px solid var(--accent); padding-bottom: 2px;
   }
   input[type=range] { -webkit-appearance: none; appearance: none; flex: 1; height: 20px; background: transparent; }
-  input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #454649; border-radius: 2px; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; background: #e6e4df; border-radius: 2px; }
   input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
-    background: linear-gradient(#e6e6e6, #b8b8b8); border: 1px solid #0c0c0c;
-    margin-top: -7px; box-shadow: 0 1px 3px #000b;
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); border: 3px solid #fff;
+    margin-top: -8px; box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
   }
-  input[type=range]::-moz-range-track { height: 4px; background: #454649; border-radius: 2px; }
+  input[type=range]::-moz-range-track { height: 4px; background: #e6e4df; border-radius: 2px; }
   input[type=range]::-moz-range-thumb {
-    width: 17px; height: 17px; border-radius: 50%;
-    background: #ccc; border: 1px solid #0c0c0c;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); border: 3px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
   }
   select {
-    flex: 1; background: linear-gradient(#2e2f31, #26272a); color: var(--text);
-    border: 1px solid #0c0c0c; border-radius: 5px; padding: 10px 12px; font-size: 14px;
+    flex: 1; background: var(--panel); color: var(--navy);
+    border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+    font-size: 14px; font-weight: 600; font-family: inherit;
   }
   button {
-    background: linear-gradient(#333436, #28292b); color: #c9cacc;
-    border: 1px solid #0c0c0c; border-radius: 5px;
-    padding: 11px 17px; font-size: 14px; cursor: pointer;
-    box-shadow: inset 0 1px 0 #ffffff12;
+    background: var(--panel); color: var(--navy);
+    border: none; border-radius: 999px;
+    padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
   }
-  button:hover { background: linear-gradient(#3b3c3e, #2e2f31); }
-  button:active { background: var(--accent); color: #1a1000; border-color: #a55708; }
+  button:hover { background: #e7e5e0; }
+  button:active { background: var(--accent); color: #fff; }
 
   .presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .presets button { padding: 20px 0; font-size: 17px; font-weight: 600; color: #909295; }
-  .presets button.saved { color: var(--accent); border-color: #7a4a10; }
+  .presets button { padding: 20px 0; font-size: 17px; font-weight: 700; color: var(--dim); border-radius: 16px; }
+  .presets button.saved { color: var(--accent); background: var(--accent-soft); }
 
-  button.rec { font-weight: 700; letter-spacing: .05em; }
+  button.rec { font-weight: 700; letter-spacing: .05em; background: var(--navy); color: #fff; }
+  button.rec:hover { background: #1a2752; }
   button.rec.on {
-    background: linear-gradient(#e04a35, #b52717); color: #fff; border-color: #7c150a;
-    box-shadow: 0 0 10px #d3392a66;
+    background: var(--rec); color: #fff;
+    box-shadow: 0 0 0 4px rgba(224, 60, 42, .18);
   }
 
   #toast {
-    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
-    background: #2c2d2f; color: #eee; border: 1px solid var(--accent);
-    padding: 9px 20px; border-radius: 4px; font-size: 12px;
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--navy); color: #fff; border: none;
+    padding: 11px 24px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(14, 26, 60, .3);
     opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 10;
   }
 </style>
@@ -260,7 +288,9 @@
         </div>
         <div id="stickArea">
           <div class="cross-v"></div><div class="cross-h"></div><div class="ring"></div>
-          <div id="knob"></div>
+          <div id="knob">
+            <i class="arr up"></i><i class="arr down"></i><i class="arr left"></i><i class="arr right"></i>
+          </div>
         </div>
         <div class="vcol">
           <span class="vcap">T</span>
@@ -324,7 +354,8 @@
 
 <script>
 let CAM = 1;                 // 操作対象カメラ（タブで切り替え）
-let camIds = [1];            // サーバー設定から検出したカメラ一覧
+const MAX_CAMS = 20;         // タブは常時20カメラ分表示（未設定カメラへの操作はブリッジ側で無視）
+let camIds = Array.from({ length: MAX_CAMS }, (_, i) => i + 1);
 let lastTally = {};
 let ws = null, recOn = false, savedPresets = [];
 
@@ -387,10 +418,7 @@ function setBadge(id, text, on) {
 }
 function applyState(m) {
   setBadge("atemBadge", m.atem_connected ? "ATEM接続" : "ATEM未接続", m.atem_connected);
-  // カメラ一覧の検出（ジンバル設定とカメラ設定の和集合）
-  const ids = [...new Set([...Object.keys(m.gimbals || {}), ...Object.keys(m.cameras || {})])]
-    .map(Number).sort((a, b) => a - b);
-  if (ids.length) camIds = ids;
+  // タブは常時1〜20を表示する（設定済みカメラだけに絞らない）
   if (!camIds.includes(CAM)) CAM = camIds[0];
   lastTally = m.tally || {};
   renderTabs();
