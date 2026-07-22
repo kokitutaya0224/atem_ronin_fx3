@@ -11,9 +11,13 @@ ATEM ──(LAN)──┐
               ├─ PoEスイッチ ─(LAN/PoE 1本)─> ESP32-POE+CANトランシーバ ──> Ronin RS4 Pro
 Mac(bridge) ──┘      │                          （カメラ台数分）
    │                 └──────────────────────── 操作用iPad等もこのLANに参加可
-   ├──(USBサブプロセス)──> fx3_wrapper/fx3cli ──(USB-C)──> FX3
+   ├──(USBサブプロセス)──> fx3_wrapper/fx3cli ──(USB-LANアダプタ経由・有線LAN／本番)
+   │                                          └─(USB-C直結／検証時のフォールバック)──> FX3
    └──(WebSocket)──> 操作パネル(ブラウザ/ゲームパッド)
 ```
+
+FX3の接続方式は `config.json` の `cameras.{n}.ip` で切り替える
+（指定時はUSB-LANアダプタ経由の有線LAN、省略時はUSB-C直結）。
 
 | 機能 | 経路 |
 |------|------|
@@ -26,7 +30,6 @@ Mac(bridge) ──┘      │                          （カメラ台数分）
 ## 必要なハードウェア（1カメラ分）
 
 - **Olimex ESP32-POE-ISO**（有線LANボード。約4,000円）
-  ※WiFi版で検証する場合のみ汎用ESP32 DevKitでも可
 - **SN65HVD230 CANトランシーバモジュール**（3.3V用・数百円）
 - **RoninのRSAポート接続用の自作コネクタ**: 3Dプリントハウジング
   （STL: `3d-print-ronin-can-connector.stl`、下記⚠️参照）+
@@ -36,36 +39,47 @@ Mac(bridge) ──┘      │                          （カメラ台数分）
 - ネットワークスイッチ（既存でOK。**PoEは不要**）
 - ゲームパッド（PS4/PS5/Xbox系、ブラウザのGamepad API対応なら何でも可）
 
-**給電方針**: ESP32はUSBアダプタ給電が標準。CANの信号線自体は電力を運ばない
-ため「CANケーブル給電」はRoninポートの電源ピン（CAN信号とは別ピン）を
-引き出す必要があり、電圧・ピン位置をR SDK文書で確認できたら配線削減の
-オプションとして検討する（DJIフォーカスモーターがポート給電で動く実績
-から、ポート自体の給電能力は確認済み）。電源のないポジションが多い運用
-ならPoE(ESP32-POEはPoE給電にも対応)へ後から移行できる。
+給電方針の詳細は下記②を参照（USBアダプタ給電がデフォルト、RSAポート
+給電は配線削減オプション）。電源のないポジションが多い運用ならPoE
+（ESP32-POEはPoE給電にも対応）へ後から移行できる。
 
-### 配線（ESP32-POE 有線LAN版・本番用）
+### 配線（ESP32-POE 有線LAN・本番構成）
 
-```
-ESP32-POE GPIO14 ── CTX ┐
-ESP32-POE GPIO13 ── CRX │ SN65HVD230 ── CANH ── Ronin RSS CANH
-ESP32-POE 3.3V   ── VCC │            └─ CANL ── Ronin RSS CANL
-ESP32-POE GND    ── GND ┘            (GND共通も接続)
-LAN端子 ── PoEスイッチへ（データ+電源がLANケーブル1本）
-```
+**全機器有線LAN固定。WiFiは使わない**（ファームウェアに`esp32dev`/WiFi版の
+ビルド環境は予備として残っているが、本番では`esp32-poe`のみ使用）。
 
-**⚠️ ピンがWiFi版と違う**: EthernetのRMIIがGPIO19/21/22/25/26/27を占有する
-ため、ESP32-POEではCANをGPIO14(CTX)/13(CRX)に配線する。GPIO12はPHY電源用で
-使用不可。ビルド環境(`-e esp32-poe`)を選べばファームウェアは自動で正しい
-ピンを使う。
+1カメラ分の配線は「Ronin RSAポート ⇔ 自作コネクタ ⇔ SN65HVD230 ⇔ ESP32-POE」
+「ESP32-POE ⇔ LANケーブル ⇔ スイッチ」の2系統のみ。対応表で1対1に追える形に
+した:
 
-### 配線（汎用ESP32 WiFi版・検証用）
+**① CAN配線（RSAポート ⇔ SN65HVD230 ⇔ ESP32-POE）**
 
-```
-ESP32 GPIO21 ── CTX ┐
-ESP32 GPIO22 ── CRX │ SN65HVD230 ── CANH ── Ronin RSS CANH
-ESP32 3.3V  ── VCC  │            └─ CANL ── Ronin RSS CANL
-ESP32 GND   ── GND  ┘            (GND共通も接続)
-```
+| Ronin RSAポート（自作コネクタ側） | SN65HVD230モジュール | ESP32-POE |
+|---|---|---|
+| Pin 4 (CANH) | CANH | ― |
+| Pin 2 (CANL) | CANL | ― |
+| ― | CTX (TX) | GPIO14 |
+| ― | CRX (RX) | GPIO13 |
+| ― | VCC (3.3V) | 3.3V |
+| Pin 6 (GND) | GND | GND（3点とも共通GNDで接続） |
+| Pin 5 (AD_COM) | ― | GND（10〜100kΩ経由でプルダウン。**これを繋がないとRSAポートがVCCを出力しない**） |
+| Pin 1 (VCC 8V) | ― | 未接続（②の給電オプションを使う場合のみ配線） |
+| Pin 3 (SBUS_RX) | ― | 未接続（未使用） |
+
+**⚠️ GPIO14/13を使う理由**: EthernetのRMIIがGPIO19/21/22/25/26/27を占有する
+ため、ESP32-POEではこの2本しか空きがない（GPIO12はPHY電源で使用不可）。
+ビルド環境`-e esp32-poe`を選べばファームウェアは自動でこのピン割り当てになる。
+
+**② 給電（2案。まずはAで組んで、現場で電源タップが取りにくい場合にBへ）**
+
+- **A: USBアダプタ給電（フェーズ1のデフォルト）** — ESP32-POEのUSB-CまたはMicro-USBに
+  汎用USB電源アダプタを挿すだけ。RSAポートのVCCピンは未接続のままでよい。
+- **B: RSAポート給電（配線削減オプション、後回しでよい）** — RSA Pin1(VCC 8V) →
+  MP1584降圧モジュール(IN) → OUT 5V → ESP32-POEの5V/VINピンへ。GNDも共通接続。
+  ①のAD_COMプルダウンが無いとPin1からVCCが出ないので①と②は連動する。
+
+**③ LAN配線** — ESP32-POEのLANポートからPoEスイッチへ1本（データ・電源が
+このケーブル1本で完結）。PoEスイッチ側はATEM・Mac(bridge)と同一LANに接続。
 
 ## セットアップ
 
@@ -102,11 +116,11 @@ IPを指定する。アダプタはバスパワーでPoE等は不要。
 ```bash
 cd firmware
 # src/config.h の固定IPを編集（bridge/config.jsonのgimbals.ipと合わせる）
-# 有線LAN版（本番・Olimex ESP32-POE）:
 pio run -e esp32-poe -t upload && pio device monitor
-# WiFi版（検証用・要SSID/パスワード編集）:
-pio run -e esp32dev -t upload && pio device monitor
 ```
+
+（`esp32dev`/WiFiビルド環境はコードに残しているだけの予備。本番運用は
+WiFiを使わないため`esp32-poe`のみ書き込めばよい。）
 
 ### 3. FX3ラッパー
 
