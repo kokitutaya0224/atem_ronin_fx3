@@ -28,7 +28,9 @@ Mac(bridge) ──┘      │                          （カメラ台数分）
 - **Olimex ESP32-POE-ISO**（有線LANボード。約4,000円）
   ※WiFi版で検証する場合のみ汎用ESP32 DevKitでも可
 - **SN65HVD230 CANトランシーバモジュール**（3.3V用・数百円）
-- **RoninのRSSポートへの接続ケーブル**（下記⚠️参照）
+- **RoninのRSAポート接続用の自作コネクタ**: 3Dプリントハウジング
+  （STL: `3d-print-ronin-can-connector.stl`、下記⚠️参照）+
+  Preci-Dip 813/811-S1シリーズ ポゴピン（8コンタクト・数百〜千円程度）
 - **USB電源アダプタ**（ESP32給電用。カメラポジションの電源タップから取る）
 - **USB-LAN変換アダプタ**（FX3用。AX88179チップ系が定番、2〜3千円）
 - ネットワークスイッチ（既存でOK。**PoEは不要**）
@@ -130,6 +132,18 @@ pio run -e esp32dev -t upload && pio device monitor
    RS 4 Proでの同一性は実機確認（APC-RがRS 4 Pro対応でRSAマウントの
    ため互換の公算大）。**VCC 8Vから降圧モジュール（MP1584等の8V→5V
    buck）を挟めばESP32をジンバル給電にでき、USBアダプタも不要になる**。
+
+   **RSAポート自体は市販の変換ケーブルが存在しない**（アクセサリ側の
+   マウント一体型ポゴピン接点のため）。解決策は先行プロジェクト
+   [rileycoyote87/DJI-Ronin-RS2-Log-and-Replay](https://github.com/rileycoyote87/DJI-Ronin-RS2-Log-and-Replay)
+   （CRC照合元と同一リポジトリ）で確立済み:
+   - 同梱STL「`3d-print-ronin-can-connector.stl`」を3Dプリントしてハウジング作成
+   - ポゴピンはPreci-Dip 813/811-S1シリーズ（8コンタクト・ダブルロー・
+     2.54mmピッチ・低背はんだテール）を接着・はんだ付け
+     （[RS Online](https://jp.rs-online.com/web/p/pcb-headers/7020389)国内取扱あり、
+     [Mouser](https://www.mouser.com/ProductDetail/Preci-dip/811-S1-008-10-014101)。
+     811系/813系の型番表記ゆれあり、発注前に現物ページで再確認）
+   - 代替案: DJI R Focus Wheel純正品を1台購入しケーブルを流用
 3. **CANプロトコル実装はDJI公式文書と照合済み（2026-07-09）**:
    CRC16（poly 0x8005 / XorIn 0xc55c 反転実装init 0x3AA3）は公式
    サンプルcustom_crc16.cと一致、CAN ID（PC側Tx 0x223/Rx 0x222）・
