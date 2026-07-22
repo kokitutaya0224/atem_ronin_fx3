@@ -81,50 +81,52 @@ FX3の接続方式は `config.json` の `cameras.{n}.ip` で切り替える
 **③ LAN配線** — ESP32-POEのLANポートからPoEスイッチへ1本（データ・電源が
 このケーブル1本で完結）。PoEスイッチ側はATEM・Mac(bridge)と同一LANに接続。
 
-## セットアップ
+## セットアップ（簡単インストール）
 
 ### 1. ブリッジ（Mac）
 
 ```bash
 cd bridge
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-# config.json の atem_ip / gimbals.ip を環境に合わせて編集
-python app.py
-# → http://localhost:8090
+./install.sh   # 初回のみ: venv作成・依存インストール・ATEM IP設定（対話式）
 ```
 
+2回目以降は `./start.sh` だけでよい。起動後は `http://localhost:8090`
+で操作パネルが開く。
+
 カメラは初期設定で `"mode": "mock"`。**ATEM・ジンバル・パネルの動作を
-実カメラなしで確認できる**。FX3実機に繋ぐときは fx3_wrapper をビルドして
-`"mode": "fx3"` に変更。
+実カメラなしで確認できる**。FX3実機に繋ぐときは3.のfx3_wrapperをビルドして
+`config.json` の対象カメラを `"mode": "fx3"` に変更する
+（`"ip"` を指定すればUSB-LANアダプタ経由の有線LAN接続、省略ならUSB直結）。
 
 **FX3の接続は有線LAN推奨**（USBは5mの距離制約があり現場に不向き）。
 FX3のUSB-C端子に市販のUSB-LAN変換アダプタ（AX88179チップ系が定番）を
-装着し、カメラメニューで有線LANのPCリモート機能を有効化、config.jsonで
-IPを指定する。アダプタはバスパワーでPoE等は不要。
+装着し、カメラメニューで有線LANのPCリモート機能を有効化する。
 **⚠️ LANアダプタがUSB-C端子を占有するためUSB給電が同時に使えない**。
-長時間の本番はNP-FZ100型ダミーバッテリー（DCカプラー）でのAC給電を推奨:
-
-```json
-"cameras": { "1": { "mode": "fx3", "wrapper": "../fx3_wrapper/build/fx3cli", "ip": "192.168.10.61" } }
-```
-
-`ip` を省略するとUSB直結（検証用）。
+長時間の本番はNP-FZ100型ダミーバッテリー（DCカプラー）でのAC給電を推奨。
 
 ### 2. ESP32ファームウェア
 
 ```bash
 cd firmware
-# src/config.h の固定IPを編集（bridge/config.jsonのgimbals.ipと合わせる）
-pio run -e esp32-poe -t upload && pio device monitor
+./flash.sh <カメラ番号>   # 例: 1台目のカメラ用なら ./flash.sh 1
 ```
 
+固定IP設定（`192.168.10.(50+カメラ番号)`、bridgeのデフォルトgimbal IPと
+一致）からビルド・書き込みまで自動で行う。PlatformIO CLI未インストール
+なら導入するか聞かれる。ESP32-POEをUSBで接続した状態で実行すること。
+
 （`esp32dev`/WiFiビルド環境はコードに残しているだけの予備。本番運用は
-WiFiを使わないため`esp32-poe`のみ書き込めばよい。）
+WiFiを使わないため`esp32-poe`のみ使えばよい。）
 
 ### 3. FX3ラッパー
 
-`fx3_wrapper/README.md` 参照（SonyサイトからSDKの手動ダウンロードが必要）。
+SonyサイトからCamera Remote SDKの手動ダウンロードが必要
+（`fx3_wrapper/README.md` 参照、ライセンス同意が要るため自動化不可）。
+
+```bash
+cd fx3_wrapper
+./build.sh ~/sdk/CrSDK_vX.XX.XX_Mac   # SDK未指定ならスタブモードでビルド
+```
 
 ## ⚠️ 実機接続前に確認すべきこと（重要）
 
