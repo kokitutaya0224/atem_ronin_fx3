@@ -48,9 +48,34 @@ housing_wall_t = 3;  // 側壁厚
 plate_t = 2.5;        // 取り付け面プレートの厚み（TEST_MODEはこれだけの板になる）
 
 // ポゴピン（Preci-Dip 811-S1系を想定。発注前にデータシートで要再確認）
-pogo_bore_dia   = 1.55; // ポゴピン圧入用ボア径 [mm]（811-S1バレル外径+余裕。要データシート確認）
-pogo_bore_depth = 6.0;  // ボア深さ（ピン全長に合わせる）[mm]
-pogo_body_len   = 8.5;  // ポゴピン全長の目安（配線室の深さ計算に使用）
+//
+// 【固定方法（重要）】単純な一本ボアの圧入だけだと保持力が弱く、実際に
+// 「接着できない/スコスコする」問題が出た。そこで二段ボアにする:
+//   ①前面ランド（pogo_land_dia × pogo_land_len）
+//     パッド面すぐ下、ピン外径にきっちり合わせた圧入代。ここを長めに
+//     取ることでピンの直進性（パッドに対して垂直に立つ）が出るのと、
+//     接着剤が毛細管現象で前面（接点面）まで染み出るのを防ぐ壁になる。
+//   ②後方ポケット（pogo_glue_pocket_dia、深さ＝pogo_bore_depth−pogo_land_len）
+//     配線室側に大きく開いた空間。配線室は既に外へ開放されているので、
+//     ピンを高さ合わせして圧入した後、ここへエポキシ/UV硬化樹脂を
+//     配線室側から流し込んで恒久固定できる。接点面には接着剤が一切
+//     回らない構造。
+//
+// 【組み立て手順】
+//   1. ピンを後ろ（配線室側）からランドへ通し、先端がパッド接触に必要な
+//      突き出し量になるまで押し込む。ハウジング前面を平らな治具/ガラス板
+//      に当てて全ピンを同時に押すと高さが揃う
+//   2. マスキングテープ等で仮固定し、後方ポケットにエポキシを注入
+//   3. 硬化を待ってから配線（ハンダ）
+//
+// Preci-Dip 811-S1系にツバ(フランジ)があれば、pogo_land_len をその
+// フランジ位置に合わせるとポケット段差がハードストップになりさらに
+// 高さ精度が上がる。データシート確認のうえ調整すること。
+pogo_bore_dia    = 1.55; // ★前面ランド径（ピン外径+わずかな圧入代）[mm]。要データシート確認
+pogo_land_len    = plate_t + 1.5; // 前面ランド長 [mm]（圧入+直進性+毛細管防止）
+pogo_glue_pocket_dia = pogo_bore_dia + 1.2; // 後方エポキシポケット径 [mm]
+pogo_bore_depth  = 6.0;  // ボア総深さ（前面から。ピン全長に合わせる）[mm]
+pogo_body_len    = 8.5;  // ポゴピン全長の目安（配線室の深さ計算に使用）
 
 // 配線室（背面にケーブルを引き出す空間）
 wire_cavity_depth = 10;
@@ -82,6 +107,24 @@ module mount_holes() {
     for (dy = [-mount_hole_spacing/2, mount_hole_spacing/2])
         translate([mount_hole_offset_x, dy, 0])
         children();
+}
+
+// ポゴピン用の二段ボア（前面：圧入ランド／後方：接着ポケット）
+// z=0がパッド面（前面）。pocket_depthが負にならないよう
+// pogo_bore_depth > pogo_land_len を守ること。
+pogo_pocket_depth = pogo_bore_depth - pogo_land_len;
+assert(pogo_pocket_depth > 0.5,
+    "pogo_bore_depth は pogo_land_len より十分大きくしてください（接着ポケット確保のため）");
+
+module pogo_bore() {
+    union() {
+        // ①前面ランド（圧入・位置決め・毛細管防止の壁）
+        translate([0, 0, -1])
+            cylinder(d = pogo_bore_dia, h = pogo_land_len + 1, $fn = 24);
+        // ②後方エポキシポケット（配線室側に開放、接着剤溜まり）
+        translate([0, 0, pogo_land_len])
+            cylinder(d = pogo_glue_pocket_dia, h = pogo_pocket_depth + 1, $fn = 24);
+    }
 }
 
 // ---------- TEST_MODE: 穴位置確認用の薄板 ----------
@@ -127,10 +170,9 @@ module full_housing() {
                 wire_cavity_depth + 1
             ]);
 
-        // ポゴピン圧入ボア（プレートを貫通し、配線室側へ抜ける）
+        // ポゴピン用ボア（前面ランド＋後方接着ポケットの二段構造）
         pad_positions()
-            translate([0, 0, -1])
-            cylinder(d = pogo_bore_dia, h = plate_t + pogo_bore_depth, $fn = 24);
+            pogo_bore();
 
         // M4固定穴
         mount_holes()
