@@ -116,6 +116,10 @@ bool pollAngles(Angles &out) {
     twai_message_t msg;
     bool got = false;
     while (twai_receive(&msg, 0) == ESP_OK) {
+        // ブリングアップ用: バス上に何が来ているかをID/内容ともに素通しで見る
+        Serial.printf("CAN RX raw id=0x%03lX dlc=%d data=", (unsigned long)msg.identifier, msg.data_length_code);
+        for (int i = 0; i < msg.data_length_code; i++) Serial.printf("%02X ", msg.data[i]);
+        Serial.println();
         if (msg.identifier != CAN_RECV_ID) continue;
         if (rxLen + msg.data_length_code > sizeof(rxBuf)) rxLen = 0;
         memcpy(rxBuf + rxLen, msg.data, msg.data_length_code);
