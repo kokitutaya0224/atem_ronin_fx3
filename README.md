@@ -169,16 +169,19 @@ cd fx3_wrapper
    buck）を挟めばESP32をジンバル給電にでき、USBアダプタも不要になる**。
 
    **RSAポート自体は市販の変換ケーブルが存在しない**（アクセサリ側の
-   マウント一体型ポゴピン接点のため）。解決策は先行プロジェクト
-   [rileycoyote87/DJI-Ronin-RS2-Log-and-Replay](https://github.com/rileycoyote87/DJI-Ronin-RS2-Log-and-Replay)
-   （CRC照合元と同一リポジトリ）で確立済み:
-   - 同梱STL「`3d-print-ronin-can-connector.stl`」を3Dプリントしてハウジング作成
-   - ポゴピンはPreci-Dip 813/811-S1シリーズ（8コンタクト・ダブルロー・
-     2.54mmピッチ・低背はんだテール）を接着・はんだ付け
-     （[RS Online](https://jp.rs-online.com/web/p/pcb-headers/7020389)国内取扱あり、
-     [Mouser](https://www.mouser.com/ProductDetail/Preci-dip/811-S1-008-10-014101)。
-     811系/813系の型番表記ゆれあり、発注前に現物ページで再確認）
-   - 代替案: DJI R Focus Wheel純正品を1台購入しケーブルを流用
+   マウント一体型ポゴピン接点のため）。
+
+   **⚠️ 2026-09-01追記: 上記の物理配置図はRS2世代の文書ベースの推測であり、
+   実物のRS4 Proとは形状が異なることが判明**（実機写真: 突起ピンではなく
+   平面パッド×6が2×3グリッドで並び、上下M4ボルト穴でアクセサリを固定する
+   構造）。したがって先行プロジェクト由来のSTL「`3d-print-ronin-can-connector.stl`」
+   （RS2の8コンタクト差し込み型）はそのままでは合わない可能性が高い。
+   実測に基づくパラメトリック設計とバイパス案を `mechanical/README.md` に
+   まとめた。ポゴピンはPreci-Dip 811-S1系を想定しているが発注前に
+   データシートでバレル径を再確認すること
+   （[RS Online](https://jp.rs-online.com/web/p/pcb-headers/7020389)、
+   [Mouser](https://www.mouser.com/ProductDetail/Preci-dip/811-S1-008-10-014101)。
+   型番表記ゆれあり）。
 3. **CANプロトコル実装はDJI公式文書と照合済み（2026-07-09）**:
    CRC16（poly 0x8005 / XorIn 0xc55c 反転実装init 0x3AA3）は公式
    サンプルcustom_crc16.cと一致、CAN ID（PC側Tx 0x223/Rx 0x222）・
