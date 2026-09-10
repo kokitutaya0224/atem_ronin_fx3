@@ -19,3 +19,6 @@ firmware/.pio/
 # mechanical: .scadから再生成できる成果物はコミットしない
 mechanical/*.stl
 mechanical/*.png
+
+# 現場ごとに変わるMacのIPメモ（setup-mac.sh が書く）
+bridge/.last_mac_ip

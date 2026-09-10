@@ -1,30 +1,53 @@
 #!/usr/bin/env bash
-# ブリッジ起動（2回目以降はこれだけでOK）
-# - このPCのブラウザで操作パネルを自動で開く
-# - 同一LAN上の他PCから接続するためのURLも表示する（サーバーは 0.0.0.0 で待受）
-set -e
+# ブリッジ起動。
+#   - venvが無ければ自動で作成し依存をインストール（初回もこれ1コマンド）
+#   - このMacのブラウザで操作パネルを自動で開く
+#   - 同一LAN上の他PC/タブレット用のURLも表示（サーバーは 0.0.0.0 待受）
+# 事前に ./setup-mac.sh でこのMacのIPとATEMのIPを設定しておくこと。
+set -euo pipefail
 cd "$(dirname "$0")"
 
-if [ ! -d .venv ]; then
-  echo "初回セットアップが未実施です。先に ./install.sh を実行してください。"
+ESP32_IP="192.168.10.51"
+
+if ! command -v python3 >/dev/null; then
+  echo "python3 が見つかりません。ターミナルで  xcode-select --install  を実行してください。"
   exit 1
 fi
 
-source .venv/bin/activate
+# ---- venv 自動セットアップ（初回のみ実体が走る） --------------------------
+if [ ! -d .venv ]; then
+  echo "→ 初回セットアップ: Python仮想環境を作成中..."
+  python3 -m venv .venv
+  # shellcheck disable=SC1091
+  source .venv/bin/activate
+  echo "→ 依存パッケージをインストール中..."
+  pip install -q --upgrade pip
+  pip install -q -r requirements.txt
+else
+  # shellcheck disable=SC1091
+  source .venv/bin/activate
+fi
 
 PORT=$(python3 -c "import json;print(json.load(open('config.json')).get('web_port',8090))" 2>/dev/null || echo 8090)
 
-echo ""
+# ---- 制御LANへの到達確認 ----------------------------------------------
+if ! ping -c 1 -t 2 "$ESP32_IP" >/dev/null 2>&1; then
+  echo "⚠ ジンバル(ESP32 ${ESP32_IP})に到達できません。"
+  echo "  ./setup-mac.sh を先に実行してこのMacのIPを設定してください。"
+  echo "  （ATEM/パネルだけ試すならこのまま続行しても構いません）"
+  echo
+fi
+
 echo "操作パネル:"
 echo "  このPC        → http://localhost:${PORT}"
-# 非ループバックのIPv4を全部出す。他PCは自分が到達できるアドレスを選ぶ
-for ip in $(ifconfig 2>/dev/null | awk '/inet /{print $2}' | grep -v '^127\.'); do
+lan_ips=$(ifconfig 2>/dev/null | awk '/inet /{print $2}' | grep -v '^127\.' || true)
+for ip in $lan_ips; do
   echo "  他PC(同一LAN) → http://${ip}:${PORT}"
 done
 echo "  ※起動まで数十秒（ATEM接続待ちのあいだブラウザは開けません）"
-echo ""
+echo
 
-# サーバーが listen したらこのPCの既定ブラウザで開く（バックグラウンド監視）
+# サーバーが listen したらこのMacの既定ブラウザで開く
 (
   for _ in $(seq 1 90); do
     if curl -s -o /dev/null "http://localhost:${PORT}/" 2>/dev/null; then
