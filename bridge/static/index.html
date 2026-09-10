@@ -27,6 +27,8 @@
     height: 64px; padding: 0 30px;
     background: var(--bg);
   }
+  header .logo { height: 24px; width: auto; display: block; }
+  header .sep { width: 1px; height: 22px; background: var(--inner-line); }
   header h1 { font-size: 19px; font-weight: 500; letter-spacing: .01em; color: var(--navy); }
   header h1 b { font-weight: 700; }
   .badges { margin-left: auto; display: flex; gap: 8px; }
@@ -250,6 +252,8 @@
 </head>
 <body>
 <header>
+  <img class="logo" src="/static/symphonity.webp" alt="Symphonity">
+  <span class="sep"></span>
   <h1><b>ATEM</b> PTZ Bridge</h1>
   <div class="badges">
     <span class="badge" id="wsBadge">サーバー</span>
@@ -322,7 +326,14 @@
   <div class="panel" id="rightPanel">
     <section>
       <h2>プリセット — タップ=呼び出し / 長押し=保存</h2>
-      <div class="box"><div class="presets" id="presets"></div></div>
+      <div class="box">
+        <div class="row" style="margin-top:0">
+          <label>移動時間</label>
+          <input type="range" id="presetMs" min="3" max="50" step="1" value="15">
+          <span class="val" id="presetMsVal">1.5s</span>
+        </div>
+        <div class="presets" id="presets" style="margin-top:16px"></div>
+      </div>
     </section>
 
     <section>
@@ -531,7 +542,24 @@ setInterval(() => {
 
 document.getElementById("speedScale").oninput = e =>
   document.getElementById("speedVal").textContent = e.target.value + "%";
-document.getElementById("recenterBtn").onclick = () => send({ t: "recenter", cam: CAM });
+
+// ---------- プリセット/センター移動時間 ----------
+const presetMsEl = document.getElementById("presetMs");
+const presetMsValEl = document.getElementById("presetMsVal");
+try {
+  const s = localStorage.getItem("presetMs");
+  if (s) presetMsEl.value = s;
+} catch (_) {}
+function fmtPresetMs() { presetMsValEl.textContent = (presetMsEl.value / 10).toFixed(1) + "s"; }
+function presetMoveMs() { return Math.round(presetMsEl.value * 100); }  // スライダー3..50 → 300..5000ms
+fmtPresetMs();
+presetMsEl.oninput = () => {
+  fmtPresetMs();
+  try { localStorage.setItem("presetMs", presetMsEl.value); } catch (_) {}
+};
+
+document.getElementById("recenterBtn").onclick =
+  () => send({ t: "recenter", cam: CAM, ms: presetMoveMs() });
 
 // ---------- プリセット ----------
 function renderPresets() {
@@ -547,7 +575,7 @@ function renderPresets() {
       });
       b.addEventListener("pointerup", () => {
         clearTimeout(timer);
-        if (!longPressed) send({ t: "preset_recall", cam: CAM, slot: i });
+        if (!longPressed) send({ t: "preset_recall", cam: CAM, slot: i, ms: presetMoveMs() });
       });
       b.addEventListener("pointerleave", () => clearTimeout(timer));
       box.appendChild(b);

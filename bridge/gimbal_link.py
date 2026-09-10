@@ -23,6 +23,15 @@ log = logging.getLogger("gimbal")
 PRESET_FILE = os.path.join(os.path.dirname(__file__), "presets.json")
 JOY_TIMEOUT = 0.25   # ジョイスティック無入力とみなす時間
 SEND_RATE = 0.05     # 速度指令の再送周期 (20Hz)
+MIN_MOVE_MS = 300    # 位置移動時間の下限（速すぎるスルーでジンバルが暴れるのを防ぐ）
+MAX_MOVE_MS = 10000  # 上限
+
+
+def _clamp_ms(ms):
+    try:
+        return max(MIN_MOVE_MS, min(int(ms), MAX_MOVE_MS))
+    except (TypeError, ValueError):
+        return 1500
 
 
 class GimbalLink:
@@ -50,12 +59,12 @@ class GimbalLink:
             self._joy_time = time.time()
             self._active = True
 
-    def recenter(self):
-        self._send({"t": "pos", "y": 0, "p": 0, "r": 0, "ms": 1500})
+    def recenter(self, ms=1500):
+        self._send({"t": "pos", "y": 0, "p": 0, "r": 0, "ms": _clamp_ms(ms)})
 
     def move_to(self, yaw_deg, pitch_deg, ms=2000):
         self._send({"t": "pos", "y": int(yaw_deg * 10),
-                    "p": int(pitch_deg * 10), "r": 0, "ms": ms})
+                    "p": int(pitch_deg * 10), "r": 0, "ms": _clamp_ms(ms)})
 
     def request_angles(self):
         self._send({"t": "gp"})
@@ -78,7 +87,7 @@ class GimbalLink:
         p = presets.get(str(slot))
         if not p:
             return False
-        self._send({"t": "pos", "y": p["y"], "p": p["p"], "r": 0, "ms": ms})
+        self._send({"t": "pos", "y": p["y"], "p": p["p"], "r": 0, "ms": _clamp_ms(ms)})
         return True
 
     def list_presets(self):

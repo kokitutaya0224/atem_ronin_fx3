@@ -121,7 +121,7 @@ def handle_message(msg):
     if t == "joy" and g:
         g.joystick(float(msg["yaw"]), float(msg["pitch"]))
     elif t == "recenter" and g:
-        g.recenter()
+        g.recenter(int(msg.get("ms", 1500)))
     elif t == "preset_save" and g:
         ok = g.save_preset(int(msg["slot"]))
         broadcast({"t": "toast",
