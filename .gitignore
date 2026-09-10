@@ -15,3 +15,7 @@ firmware/.pio/
 
 # macOS
 .DS_Store
+
+# mechanical: .scadから再生成できる成果物はコミットしない
+mechanical/*.stl
+mechanical/*.png
