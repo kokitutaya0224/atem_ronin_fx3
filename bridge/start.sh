@@ -7,8 +7,6 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-ESP32_IP="192.168.10.51"
-
 if ! command -v python3 >/dev/null; then
   echo "python3 が見つかりません。ターミナルで  xcode-select --install  を実行してください。"
   exit 1
@@ -29,11 +27,12 @@ else
 fi
 
 PORT=$(python3 -c "import json;print(json.load(open('config.json')).get('web_port',8090))" 2>/dev/null || echo 8090)
+ESP32_IP=$(python3 -c "import json;print(json.load(open('config.json')).get('gimbals',{}).get('1',{}).get('ip',''))" 2>/dev/null || echo "")
 
 # ---- 制御LANへの到達確認 ----------------------------------------------
-if ! ping -c 1 -t 2 "$ESP32_IP" >/dev/null 2>&1; then
+if [ -n "$ESP32_IP" ] && ! ping -c 1 -t 2 "$ESP32_IP" >/dev/null 2>&1; then
   echo "⚠ ジンバル(ESP32 ${ESP32_IP})に到達できません。"
-  echo "  ./setup-mac.sh を先に実行してこのMacのIPを設定してください。"
+  echo "  ./setup-mac.sh を先に実行してこのMacのIP/ジンバルIPを設定してください。"
   echo "  （ATEM/パネルだけ試すならこのまま続行しても構いません）"
   echo
 fi
